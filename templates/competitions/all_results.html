@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}All Competition Results - Service Manager{% endblock %}
+
+{% block content %}
+<style>
+    .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+    .top-bar { margin-bottom: 20px; }
+    .back-btn { background: #475569; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; transition: opacity 0.2s; }
+    .back-btn:hover { opacity: 0.85; }
+    h1 { color: #0d1f35; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .competitions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(370px, 1fr)); gap: 20px; }
+    .competition-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 4px solid #0d5c9e; }
+    .competition-card.completed { border-left-color: #10b981; }
+    .competition-card h3 { color: #0d5c9e; margin: 0 0 10px 0; }
+    .stats { display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
+    .stat { padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; }
+    .stat-accepted { background: #d1fae5; color: #065f46; }
+    .stat-refused  { background: #fee2e2; color: #dc2626; }
+    .stat-pending  { background: #fed7aa; color: #9a3412; }
+    .empty { text-align: center; padding: 50px; color: #94a3b8; }
+
+    .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; margin-bottom: 10px; }
+    .status-draft     { background: #fef3c7; color: #92400e; }
+    .status-sent      { background: #dbeafe; color: #1d4ed8; }
+    .status-completed { background: #d1fae5; color: #065f46; }
+
+    .btn-send-report {
+        width: 100%; margin-top: 14px;
+        padding: 10px; border: none; border-radius: 9px;
+        background: linear-gradient(135deg, #0d1f35, #0d5c9e);
+        color: white; font-size: 0.88rem; font-weight: 700;
+        cursor: pointer; font-family: 'Segoe UI', sans-serif;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-send-report:hover  { opacity: 0.9; transform: translateY(-1px); }
+    .btn-send-report:active { transform: scale(0.98); }
+
+    .completed-label {
+        width: 100%; margin-top: 14px; padding: 10px;
+        background: #f0fdf4; border: 1px solid #bbf7d0;
+        border-radius: 9px; text-align: center;
+        color: #065f46; font-size: 0.88rem; font-weight: 700;
+    }
+
+    .no-accepted {
+        width: 100%; margin-top: 14px; padding: 10px;
+        background: #fef9c3; border: 1px solid #fde047;
+        border-radius: 9px; text-align: center;
+        color: #92400e; font-size: 0.85rem; font-weight: 600;
+    }
+</style>
+
+<div class="container">
+    <div class="top-bar">
+        <a href="{% url 'dashboard' %}" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <h1><i class="fas fa-chart-bar"></i> All Competition Results</h1>
+
+    <div class="competitions-grid">
+        {% for item in competitions_data %}
+        <div class="competition-card {% if item.competition.status == 'completed' %}completed{% endif %}">
+
+            <div>
+                {% if item.competition.status == 'draft' %}
+                    <span class="status-badge status-draft">⏳ Draft</span>
+                {% elif item.competition.status == 'sent' %}
+                    <span class="status-badge status-sent">📨 Invitations Sent</span>
+                {% elif item.competition.status == 'completed' %}
+                    <span class="status-badge status-completed">✅ Completed</span>
+                {% endif %}
+            </div>
+
+            <h3>{{ item.competition.title }}</h3>
+            <p style="color:#64748b;font-size:0.84rem;margin-bottom:4px;">
+                📅 {{ item.competition.start_date }} → {{ item.competition.end_date }}
+            </p>
+            <p style="color:#64748b;font-size:0.84rem;">
+                📍 {{ item.competition.location }}
+            </p>
+
+            <div class="stats">
+                <span class="stat stat-accepted">✅ Accepted: {{ item.accepted_count }}</span>
+                <span class="stat stat-refused">❌ Refused: {{ item.refused_count }}</span>
+                <span class="stat stat-pending">⏳ Pending: {{ item.pending_count }}</span>
+                <span class="stat" style="background:#f1f5f9;color:#475569;">📊 Total: {{ item.total }}</span>
+            </div>
+
+            {% if user_role == 'chef_service' %}
+                {% if item.competition.status == 'completed' %}
+                    <div class="completed-label">
+                        <i class="fas fa-check-circle"></i> Report sent — {{ item.accepted_count }} absence records created
+                    </div>
+
+                {% elif item.accepted_count > 0 %}
+                    <form method="post" action="{% url 'send_final_report' item.competition.id %}"
+                          onsubmit="return confirm('Send final report for {{ item.competition.title }}?\nThis will register {{ item.accepted_count }} absence records.')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-send-report">
+                            <i class="fas fa-paper-plane"></i>
+                            Send Final Report & Register Absences ({{ item.accepted_count }} students)
+                        </button>
+                    </form>
+
+                {% else %}
+                    <div class="no-accepted">
+                        ⚠️ No accepted students yet — cannot send report
+                    </div>
+                {% endif %}
+            {% endif %}
+
+        </div>
+        {% empty %}
+        <div class="empty" style="grid-column: 1/-1;">
+            <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+            <p>No competitions yet</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

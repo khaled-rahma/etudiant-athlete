@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard | CS Department</title>
+    {% load static %}
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',Tahoma,sans-serif;background:#eef4fb;color:#1e293b}
+
+        /* ─── HEADER ─── */
+        .header{
+            background:linear-gradient(135deg,#08111f,#0d1f35,#0a3060);
+            color:white;padding:0 28px;height:88px;
+            display:flex;align-items:center;justify-content:space-between;
+            box-shadow:0 4px 20px rgba(0,0,0,0.4);
+        }
+        .header-left{display:flex;align-items:center;gap:14px}
+        .hlogo{height:62px;background:white;border-radius:10px;padding:4px}
+        .htext{display:flex;flex-direction:column;gap:2px}
+        .hu{font-size:0.71rem;color:#93c5fd}
+        .hf{font-size:0.66rem;color:#60a5fa}
+        .hd{font-size:0.93rem;color:#fff;font-weight:800}
+        .header-right{display:flex;align-items:center;gap:10px}
+        .role-badge{background:rgba(255,255,255,0.1);padding:6px 14px;border-radius:20px;font-size:0.81rem;color:#93c5fd;font-weight:600}
+        .logout-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);color:white;padding:7px 14px;border-radius:8px;text-decoration:none;font-size:0.82rem;font-weight:600;transition:all 0.2s}
+        .logout-btn:hover{background:rgba(255,255,255,0.25)}
+
+        /* ─── LAYOUT ─── */
+        .page{max-width:900px;margin:28px auto;padding:0 20px}
+
+        /* ─── WELCOME ─── */
+        .welcome-card{background:linear-gradient(135deg,#0d1f35,#0d5c9e);color:white;border-radius:16px;padding:24px 28px;margin-bottom:24px;box-shadow:0 4px 20px rgba(13,92,158,0.25)}
+        .welcome-card h1{font-size:1.3rem;margin-bottom:6px}
+        .welcome-card p{color:#93c5fd;font-size:0.84rem;margin-bottom:14px}
+        .info-pills{display:flex;flex-wrap:wrap;gap:8px}
+        .pill{background:rgba(255,255,255,0.15);padding:5px 13px;border-radius:20px;font-size:0.78rem;color:white}
+
+        /* ─── SECTION ─── */
+        .section{background:white;border-radius:14px;padding:22px 26px;margin-bottom:20px;box-shadow:0 2px 12px rgba(13,92,158,0.07)}
+        .section-title{font-size:1rem;font-weight:800;color:#0d1f35;display:flex;align-items:center;gap:9px;padding-bottom:12px;border-bottom:2px solid #dce8f5;margin-bottom:16px}
+        .section-title i{color:#0d5c9e}
+
+        /* ─── COMPETITION CARD ─── */
+        .comp-card{border:1px solid #dce8f5;border-radius:12px;overflow:hidden;margin-bottom:14px;transition:box-shadow 0.2s}
+        .comp-card:hover{box-shadow:0 4px 16px rgba(13,92,158,0.12)}
+        .comp-head{background:linear-gradient(135deg,#0d1f35,#0d5c9e);padding:12px 16px;color:white}
+        .comp-head h3{font-size:0.95rem;margin-bottom:3px}
+        .comp-head small{font-size:0.72rem;color:#93c5fd}
+        .comp-body{padding:14px 16px}
+        .comp-info{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+        .ci-label{font-size:0.71rem;color:#64748b;font-weight:600}
+        .ci-value{font-size:0.86rem;color:#0d1f35;font-weight:700}
+        .comp-actions{display:flex;gap:10px}
+
+        /* ─── BUTTONS ─── */
+        .btn{padding:9px 16px;border:none;border-radius:9px;cursor:pointer;font-size:0.87rem;font-weight:700;font-family:'Segoe UI',sans-serif;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s}
+        .btn-accept{flex:1;justify-content:center;background:linear-gradient(135deg,#059669,#10b981);color:white}
+        .btn-refuse{flex:1;justify-content:center;background:linear-gradient(135deg,#dc2626,#ef4444);color:white}
+        .btn-ai{background:linear-gradient(135deg,#7c3aed,#a855f7);color:white}
+        .btn-view{background:#f1f5f9;color:#475569}
+        .btn:hover{opacity:0.9;transform:translateY(-1px)}
+        .btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+
+        /* ─── BADGES ─── */
+        .badge-done{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:0.84rem;font-weight:700}
+        .badge-done.accepted{background:#dcfce7;color:#065f46}
+        .badge-done.refused{background:#fee2e2;color:#dc2626}
+        .badge-healthy{background:#dcfce7;color:#065f46;padding:4px 12px;border-radius:20px;font-size:0.78rem;font-weight:700}
+        .badge-injured{background:#fee2e2;color:#dc2626;padding:4px 12px;border-radius:20px;font-size:0.78rem;font-weight:700}
+
+        /* ─── AI PANEL ─── */
+        .ai-panel{
+            background:linear-gradient(135deg,#faf5ff,#f3e8ff);
+            border:1.5px solid #d8b4fe;border-radius:12px;
+            padding:18px;margin-top:14px;
+        }
+        .ai-panel-title{font-size:0.9rem;font-weight:800;color:#6d28d9;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+        .ai-input-group{margin-bottom:12px}
+        .ai-input-group label{font-size:0.81rem;font-weight:700;color:#4c1d95;display:block;margin-bottom:5px}
+        .ai-input-group textarea{width:100%;padding:10px 12px;border:1.5px solid #d8b4fe;border-radius:8px;font-size:0.84rem;font-family:'Segoe UI',sans-serif;resize:vertical;outline:none;transition:border-color 0.2s;min-height:70px}
+        .ai-input-group textarea:focus{border-color:#7c3aed}
+
+        /* ─── IMAGE UPLOAD ─── */
+        .img-upload-area{
+            border:2px dashed #d8b4fe;border-radius:10px;
+            background:#faf5ff;padding:14px;
+            text-align:center;cursor:pointer;transition:all 0.2s;
+        }
+        .img-upload-area:hover{border-color:#7c3aed;background:#f3e8ff}
+        .img-upload-area i{font-size:1.8rem;color:#7c3aed;margin-bottom:6px;display:block}
+        .img-upload-area span{font-size:0.82rem;font-weight:700;color:#6d28d9;display:block}
+        .img-upload-area small{font-size:0.71rem;color:#94a3b8}
+        .img-upload-area.has-files{border-color:#059669;background:#f0fdf4}
+
+        .img-previews{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+        .img-preview-item{position:relative;width:72px;height:72px}
+        .img-preview-item img{width:100%;height:100%;object-fit:cover;border-radius:8px;border:2px solid #d8b4fe}
+        .img-preview-item .remove-img{
+            position:absolute;top:-6px;right:-6px;width:18px;height:18px;
+            background:#ef4444;color:white;border-radius:50%;border:none;
+            cursor:pointer;font-size:0.65rem;display:flex;align-items:center;justify-content:center;
+        }
+
+        /* ─── AI RESULT ─── */
+        .ai-result{
+            background:white;border:1.5px solid #d8b4fe;border-radius:12px;
+            padding:18px;margin-top:14px;
+        }
+        .ai-result-title{font-size:0.88rem;font-weight:800;color:#6d28d9;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+        .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+        .result-item{background:#faf5ff;border-radius:8px;padding:10px 12px}
+        .result-label{font-size:0.7rem;color:#64748b;font-weight:600;margin-bottom:3px}
+        .result-value{font-size:0.88rem;color:#0d1f35;font-weight:700}
+        .severity-bar{height:8px;background:#e2e8f0;border-radius:20px;overflow:hidden;margin-top:6px}
+        .severity-fill{height:100%;border-radius:20px;transition:width 0.8s ease}
+        .severity-mild{background:#10b981}
+        .severity-moderate{background:#f59e0b}
+        .severity-severe{background:#ef4444}
+        .result-list{list-style:none;padding:0}
+        .result-list li{font-size:0.82rem;color:#475569;padding:3px 0;display:flex;align-items:flex-start;gap:6px}
+        .result-list li::before{content:"•";color:#7c3aed;font-weight:900;flex-shrink:0}
+        .result-full{background:#faf5ff;border-radius:8px;padding:10px 12px;margin-bottom:10px}
+
+        /* ─── PROGRESS ─── */
+        .ai-progress{text-align:center;padding:20px;color:#6d28d9}
+        .ai-progress i{font-size:2rem;margin-bottom:8px;display:block;animation:spin 1.5s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* ─── EMPTY ─── */
+        .empty-msg{text-align:center;padding:28px;color:#94a3b8;font-size:0.9rem}
+        .empty-msg i{font-size:1.8rem;display:block;margin-bottom:8px;opacity:0.35}
+
+        /* ─── TOAST ─── */
+        #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0d1f35;color:white;padding:12px 24px;border-radius:10px;font-size:0.87rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity 0.3s;z-index:9999}
+        #toast.show{opacity:1}
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-left">
+        <img src="{% static 'images/hhhhhheeee.jpg' %}" class="hlogo">
+        <div class="htext">
+            <span class="hu">University Kasdi Merbah – Ouargla</span>
+            <span class="hf">Faculty of New Technologies of Information and Communication</span>
+            <span class="hd">Computer Science Department</span>
+        </div>
+    </div>
+    <div class="header-right">
+        <span class="role-badge">🎓 Student Portal</span>
+        <a href="{% url 'logout' %}" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+</header>
+
+<div class="page">
+
+    {% if error %}
+    <div style="background:#fef2f2;border:1px solid #fca5a5;color:#dc2626;padding:16px 20px;border-radius:12px;margin-bottom:20px;font-weight:600;">
+        <i class="fas fa-exclamation-triangle"></i> {{ error }}
+    </div>
+    {% else %}
+
+    <!-- ─── WELCOME ─── -->
+    <div class="welcome-card">
+        <h1>🎓 Welcome, {{ student.name }}</h1>
+        <p>Student Athlete & Cultural Activity Management System</p>
+        <div class="info-pills">
+            <span class="pill">📋 {{ student.matricule }}</span>
+            <span class="pill">📚 {{ student.specialty }}</span>
+            <span class="pill">{% if student.category == 'A' %}🏃{% else %}🎭{% endif %} {{ student.activity }}</span>
+            <span class="pill">🩸 {{ student.blood }}</span>
+        </div>
+    </div>
+
+    <!-- ─── PENDING INVITATIONS ─── -->
+    <div class="section">
+        <div class="section-title">
+            <i class="fas fa-envelope-open-text"></i>
+            New Competition Invitations
+            {% if pending_parts %}
+            <span style="background:#ef4444;color:white;font-size:0.71rem;padding:2px 8px;border-radius:20px;margin-left:auto;">
+                {{ pending_parts|length }}
+            </span>
+            {% endif %}
+        </div>
+
+        {% if pending_parts %}
+            {% for p in pending_parts %}
+            <div class="comp-card" id="part-{{ p.id }}">
+                <div class="comp-head">
+                    <h3>{{ p.competition.title }}</h3>
+                    <small>📅 {{ p.competition.start_date }} → {{ p.competition.end_date }}</small>
+                </div>
+                <div class="comp-body">
+                    <div class="comp-info">
+                        <div><div class="ci-label">Activity</div><div class="ci-value">{{ p.competition.activity_name }}</div></div>
+                        <div><div class="ci-label">Location</div><div class="ci-value">📍 {{ p.competition.location }}</div></div>
+                        <div><div class="ci-label">Travel Required</div><div class="ci-value">{% if p.competition.is_travel %}✈️ Yes{% else %}🏠 No{% endif %}</div></div>
+                    </div>
+                    <div class="comp-actions">
+                        <button class="btn btn-accept" onclick="respond({{ p.id }}, 'accept')">
+                            <i class="fas fa-check"></i> Accept Participation
+                        </button>
+                        <button class="btn btn-refuse" onclick="respond({{ p.id }}, 'refuse')">
+                            <i class="fas fa-times"></i> Decline
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-msg"><i class="fas fa-inbox"></i>No new invitations at the moment</div>
+        {% endif %}
+    </div>
+
+    <!-- ─── ACCEPTED PARTICIPATIONS ─── -->
+    <div class="section">
+        <div class="section-title">
+            <i class="fas fa-trophy"></i> My Participations
+        </div>
+
+        {% if accepted_parts %}
+            {% for p in accepted_parts %}
+            <div class="comp-card">
+                <div class="comp-head">
+                    <h3>{{ p.competition.title }}</h3>
+                    <small>📅 {{ p.competition.start_date }} → {{ p.competition.end_date }} &nbsp;|&nbsp; 📍 {{ p.competition.location }}</small>
+                </div>
+                <div class="comp-body">
+                    <div class="comp-info">
+                        <div><div class="ci-label">Activity</div><div class="ci-value">{{ p.competition.activity_name }}</div></div>
+                        <div><div class="ci-label">Travel</div><div class="ci-value">{% if p.competition.is_travel %}✈️ Yes{% else %}🏠 No{% endif %}</div></div>
+                        {% if p.absence_status %}
+                        <div>
+                            <div class="ci-label">Health Status</div>
+                            <div class="ci-value">
+                                {% if p.absence_status.injury_status == 'healthy' %}
+                                <span class="badge-healthy">✅ Healthy</span>
+                                {% elif p.absence_status.injury_status == 'injured' %}
+                                <span class="badge-injured">🤕 Injured</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- ─── حالة العودة ─── -->
+                    {% if p.absence_status and p.absence_status.return_confirmed %}
+                        <div style="margin-bottom:12px;">
+                            <span class="badge-done accepted"><i class="fas fa-check-circle"></i> Return confirmed</span>
+                        </div>
+
+                        <!-- إذا مصاب → أظهر التقرير أو نموذج التحليل (للطلاب الرياضيين فقط) -->
+                        {% if p.absence_status.injury_status == 'injured' and student.category == 'A' %}
+                            {% if p.absence_status.ai_analysis %}
+                            <!-- ─── عرض التقرير المحفوظ ─── -->
+                            <button class="btn btn-ai" style="margin-bottom:10px;"
+                                    onclick="toggleSavedReport('saved-{{ p.id }}')">
+                                <i class="fas fa-robot"></i> View AI Medical Report
+                            </button>
+                            <div id="saved-{{ p.id }}" style="display:none;">
+                                {% include 'partials/ai_report_card.html' with analysis=p.absence_status.ai_analysis %}
+                            </div>
+                            {% else %}
+                            <!-- ─── نموذج التحليل (للطلاب الرياضيين فقط) ─── -->
+                            <div class="ai-panel">
+                                <div class="ai-panel-title">
+                                    <i class="fas fa-robot"></i> AI Medical Report Analyzer
+                                </div>
+
+                                <!-- رفع صور التقرير الطبي -->
+                                <div class="ai-input-group">
+                                    <label><i class="fas fa-images"></i> Upload Medical Report Images (up to 3)</label>
+                                    <div class="img-upload-area" id="drop-{{ p.id }}"
+                                         onclick="document.getElementById('imgs-{{ p.id }}').click()">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <span>Click to upload medical report images</span>
+                                        <small>X-ray, MRI, scan, or any medical document — JPG/PNG</small>
+                                    </div>
+                                    <input type="file" id="imgs-{{ p.id }}" multiple accept="image/*"
+                                           style="display:none" onchange="previewImages({{ p.id }}, this)">
+                                    <div class="img-previews" id="previews-{{ p.id }}"></div>
+                                </div>
+
+                                <!-- وصف اختياري -->
+                                <div class="ai-input-group">
+                                    <label><i class="fas fa-comment-medical"></i> Additional Description (optional)</label>
+                                    <textarea id="desc-{{ p.id }}"
+                                              placeholder="You may add extra details about your injury here..."></textarea>
+                                </div>
+
+                                <div id="ai-error-{{ p.id }}"
+                                     style="display:none;background:#fef2f2;color:#dc2626;padding:8px 12px;border-radius:8px;font-size:0.82rem;margin-bottom:10px;font-weight:600;"></div>
+
+                                <button class="btn btn-ai" id="ai-btn-{{ p.id }}"
+                                        onclick="analyzeInjury({{ p.id }})">
+                                    <i class="fas fa-robot"></i> Analyze with AI
+                                </button>
+
+                                <div id="ai-loading-{{ p.id }}" style="display:none;">
+                                    <div class="ai-progress">
+                                        <i class="fas fa-circle-notch"></i>
+                                        Analyzing your medical report... Please wait.
+                                    </div>
+                                </div>
+
+                                <div id="ai-result-{{ p.id }}" style="display:none;"></div>
+                            </div>
+                            {% endif %}
+                        {% endif %}
+
+                    {% else %}
+                        <!-- لم يتم تأكيد العودة بعد -->
+                        <div style="margin-bottom:12px;">
+                            <span style="background:#fef3c7;color:#92400e;padding:6px 14px;border-radius:8px;font-size:0.83rem;font-weight:700;">
+                                ⏳ Return not yet confirmed
+                            </span>
+                        </div>
+
+                        <!-- إذا كان الطالب ثقافي → زر واحد فقط -->
+                        {% if student.category == 'B' %}
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn btn-accept" style="flex:0;"
+                                    onclick="confirmReturnCultural({{ p.id }})">
+                                <i class="fas fa-check"></i> Confirm Return
+                            </button>
+                        </div>
+
+                        {% else %}
+                        <!-- إذا كان الطالب رياضي → خياران (سليم / مصاب) -->
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn btn-accept" style="flex:0;"
+                                    onclick="confirmReturn({{ p.id }}, 'healthy')">
+                                <i class="fas fa-check"></i> Returned Healthy
+                            </button>
+                            <button class="btn" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;flex:0;"
+                                    onclick="showInjuryAI({{ p.id }})">
+                                <i class="fas fa-heartbeat"></i> Returned with Injury
+                            </button>
+                        </div>
+                        {% endif %}
+
+                        <!-- نموذج الإصابة مخفي (لطلاب الرياضة فقط) -->
+                        <div id="injury-panel-{{ p.id }}" style="display:none;margin-top:14px;">
+                            <div class="ai-panel">
+                                <div class="ai-panel-title">
+                                    <i class="fas fa-robot"></i> AI Medical File Analyzer
+                                </div>
+
+                                <div class="ai-input-group">
+                                    <label><i class="fas fa-images"></i> Upload Medical file Images</label>
+                                    <div class="img-upload-area" id="drop2-{{ p.id }}"
+                                         onclick="document.getElementById('imgs2-{{ p.id }}').click()">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <span>Click to upload medical file images</span>
+                                        <small>X-ray, MRI, scan, or any medical document — JPG/PNG</small>
+                                    </div>
+                                    <input type="file" id="imgs2-{{ p.id }}" multiple accept="image/*"
+                                           style="display:none" onchange="previewImages2({{ p.id }}, this)">
+                                    <div class="img-previews" id="previews2-{{ p.id }}"></div>
+                                </div>
+
+                                <div class="ai-input-group">
+                                    <label><i class="fas fa-comment-medical"></i> Additional Description (optional)</label>
+                                    <textarea id="desc2-{{ p.id }}"
+                                              placeholder="Describe your injury or add context..."></textarea>
+                                </div>
+
+                                <div id="ai-error2-{{ p.id }}"
+                                     style="display:none;background:#fef2f2;color:#dc2626;padding:8px 12px;border-radius:8px;font-size:0.82rem;margin-bottom:10px;font-weight:600;"></div>
+
+                                <button class="btn btn-ai" id="ai-btn2-{{ p.id }}"
+                                        onclick="analyzeInjury2({{ p.id }})">
+                                    <i class="fas fa-robot"></i> Analyze & Confirm Return with Injury
+                                </button>
+
+                                <div id="ai-loading2-{{ p.id }}" style="display:none;">
+                                    <div class="ai-progress">
+                                        <i class="fas fa-circle-notch"></i>
+                                        Analyzing your medical file... Please wait.
+                                    </div>
+                                </div>
+
+                                <div id="ai-result2-{{ p.id }}" style="display:none;"></div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-msg"><i class="fas fa-folder-open"></i>No current participations</div>
+        {% endif %}
+    </div>
+
+    <!-- ─── REFUSED ─── -->
+    {% if refused_parts %}
+    <div class="section">
+        <div class="section-title"><i class="fas fa-times-circle"></i> Declined Invitations</div>
+        {% for p in refused_parts %}
+        <div class="comp-card">
+            <div class="comp-head"><h3>{{ p.competition.title }}</h3><small>📅 {{ p.competition.start_date }} → {{ p.competition.end_date }}</small></div>
+            <div class="comp-body">
+                <span class="badge-done refused"><i class="fas fa-times-circle"></i> Declined</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% endif %}{# end error #}
+</div>
+
+<div id="toast"></div>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+
+// ── stored images per participation ──
+const imageStores  = {};   // { partId: [File, ...] }
+const imageStores2 = {};
+
+function showToast(msg, ok=true) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = ok ? '#0d1f35' : '#dc2626';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ──────────────────────────────────────
+//  Image preview helpers
+// ──────────────────────────────────────
+function previewImages(partId, input) {
+    const files = Array.from(input.files).slice(0, 3);
+    imageStores[partId] = files;
+    renderPreviews(partId, files, 'previews-' + partId, 'drop-' + partId);
+}
+
+function previewImages2(partId, input) {
+    const files = Array.from(input.files).slice(0, 3);
+    imageStores2[partId] = files;
+    renderPreviews(partId, files, 'previews2-' + partId, 'drop2-' + partId);
+}
+
+function renderPreviews(partId, files, previewsId, dropId) {
+    const container = document.getElementById(previewsId);
+    const drop      = document.getElementById(dropId);
+    container.innerHTML = '';
+    if (files.length > 0) drop.classList.add('has-files');
+    else drop.classList.remove('has-files');
+
+    files.forEach((f, i) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const item = document.createElement('div');
+            item.className = 'img-preview-item';
+            item.innerHTML = `<img src="${e.target.result}">
+                <button class="remove-img" onclick="removeImage(${partId},${i})">✕</button>`;
+            container.appendChild(item);
+        };
+        reader.readAsDataURL(f);
+    });
+}
+
+function removeImage(partId, idx) {
+    if (imageStores[partId]) {
+        imageStores[partId].splice(idx, 1);
+        renderPreviews(partId, imageStores[partId], 'previews-' + partId, 'drop-' + partId);
+    }
+}
+
+// ──────────────────────────────────────
+//  Respond to invitation
+// ──────────────────────────────────────
+function respond(partId, response) {
+    const msg = response === 'accept'
+        ? 'Confirm participation acceptance?'
+        : 'Confirm declining this invitation?';
+    if (!confirm(msg)) return;
+
+    fetch(`/api/participation/${partId}/${response}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.success) { showToast('✅ ' + d.message); setTimeout(() => location.reload(), 1200); }
+        else showToast('❌ ' + d.error, false);
+    })
+    .catch(() => showToast('❌ Connection error', false));
+}
+
+// ──────────────────────────────────────
+//  Confirm return (healthy)
+// ──────────────────────────────────────
+function confirmReturn(partId, status) {
+    if (!confirm('Confirm your return as healthy?')) return;
+    fetch('/api/confirm-return/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ participation_id: partId, injury_status: status }),
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.success) { showToast('✅ Return confirmed'); setTimeout(() => location.reload(), 1200); }
+        else showToast('❌ ' + d.error, false);
+    });
+}
+
+// ──────────────────────────────────────
+//  Show injury AI panel
+// ──────────────────────────────────────
+function showInjuryAI(partId) {
+    const panel = document.getElementById('injury-panel-' + partId);
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleSavedReport(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+// ──────────────────────────────────────
+//  AI Analysis — scenario 1 (already confirmed as injured, no report yet)
+// ──────────────────────────────────────
+function analyzeInjury(partId) {
+    const images = imageStores[partId] || [];
+    const desc   = document.getElementById('desc-' + partId).value.trim();
+    const errEl  = document.getElementById('ai-error-' + partId);
+    errEl.style.display = 'none';
+
+    if (!desc && images.length === 0) {
+        errEl.textContent = '⚠️ Please upload at least one medical image or enter a description.';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    const fd = new FormData();
+    fd.append('participation_id', partId);
+    fd.append('injury_description', desc);
+    images.forEach((f, i) => fd.append(`medical_image_${i+1}`, f));
+
+    document.getElementById('ai-btn-' + partId).disabled = true;
+    document.getElementById('ai-loading-' + partId).style.display = 'block';
+    document.getElementById('ai-result-' + partId).style.display  = 'none';
+
+    fetch('/api/analyze-injury-ai/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF },
+        body: fd,
+    })
+    .then(r => r.json())
+    .then(d => {
+        document.getElementById('ai-loading-' + partId).style.display = 'none';
+        document.getElementById('ai-btn-'    + partId).disabled = false;
+        if (d.success) {
+            const resultEl = document.getElementById('ai-result-' + partId);
+            resultEl.style.display = 'block';
+            resultEl.innerHTML = buildReportHTML(d.analysis);
+            showToast('✅ AI analysis complete!');
+        } else {
+            errEl.textContent = '❌ ' + d.error;
+            errEl.style.display = 'block';
+        }
+    })
+    .catch(() => {
+        document.getElementById('ai-loading-' + partId).style.display = 'none';
+        document.getElementById('ai-btn-'    + partId).disabled = false;
+        errEl.textContent = '❌ Connection error. Please try again.';
+        errEl.style.display = 'block';
+    });
+}
+
+// ──────────────────────────────────────
+//  AI Analysis — scenario 2 (return confirmation + injury report together)
+// ──────────────────────────────────────
+function analyzeInjury2(partId) {
+    const images = imageStores2[partId] || [];
+    const desc   = document.getElementById('desc2-' + partId).value.trim();
+    const errEl  = document.getElementById('ai-error2-' + partId);
+    errEl.style.display = 'none';
+
+    if (!desc && images.length === 0) {
+        errEl.textContent = '⚠️ Please upload at least one medical image or enter a description.';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    const fd = new FormData();
+    fd.append('participation_id', partId);
+    fd.append('injury_description', desc);
+    images.forEach((f, i) => fd.append(`medical_image_${i+1}`, f));
+
+    document.getElementById('ai-btn2-' + partId).disabled = true;
+    document.getElementById('ai-loading2-' + partId).style.display = 'block';
+    document.getElementById('ai-result2-'  + partId).style.display = 'none';
+
+    fetch('/api/analyze-injury-ai/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF },
+        body: fd,
+    })
+    .then(r => r.json())
+    .then(d => {
+        document.getElementById('ai-loading2-' + partId).style.display = 'none';
+        document.getElementById('ai-btn2-'    + partId).disabled = false;
+        if (d.success) {
+            const resultEl = document.getElementById('ai-result2-' + partId);
+            resultEl.style.display = 'block';
+            resultEl.innerHTML = buildReportHTML(d.analysis);
+            showToast('✅ Analysis complete & return confirmed!');
+        } else {
+            errEl.textContent = '❌ ' + d.error;
+            errEl.style.display = 'block';
+        }
+    })
+    .catch(() => {
+        document.getElementById('ai-loading2-' + partId).style.display = 'none';
+        document.getElementById('ai-btn2-'    + partId).disabled = false;
+        errEl.textContent = '❌ Connection error. Please try again.';
+        errEl.style.display = 'block';
+    });
+}
+
+// ──────────────────────────────────────
+//  Build AI Report HTML
+// ──────────────────────────────────────
+function buildReportHTML(a) {
+    const sev   = (a.severity_percentage || 0);
+    const lvl   = (a.severity_level || 'mild').toLowerCase();
+    const color = lvl === 'severe' ? 'severity-severe' : lvl === 'moderate' ? 'severity-moderate' : 'severity-mild';
+    const lvlColor = lvl === 'severe' ? '#dc2626' : lvl === 'moderate' ? '#f59e0b' : '#10b981';
+
+    const exercises = (a.rehab_exercises || []).map(e => `<li>${e}</li>`).join('');
+    const warnings  = (a.emergency_warnings || []).map(w => `<li>${w}</li>`).join('');
+
+    const academic  = a.academic_impact || {};
+    const acaHtml   = academic.affects_study
+        ? `<span style="color:#dc2626;font-weight:700;">⚠️ YES – ${academic.days_affected || 0} days</span>
+           <div style="font-size:0.78rem;color:#64748b;margin-top:3px;">${academic.notes || ''}</div>`
+        : `<span style="color:#059669;font-weight:700;">✅ No academic impact</span>`;
+
+    return `<div class="ai-result">
+        <div class="ai-result-title"><i class="fas fa-robot"></i> AI Medical Analysis Report</div>
+
+        <div class="result-grid">
+            <div class="result-item">
+                <div class="result-label">Injury Type</div>
+                <div class="result-value">${a.injury_type || '–'}</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Affected Body Part</div>
+                <div class="result-value">${a.affected_body_part || '–'}</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Severity Level</div>
+                <div class="result-value" style="color:${lvlColor};text-transform:capitalize;">${a.severity_level || '–'}</div>
+                <div class="severity-bar"><div class="severity-fill ${color}" style="width:${sev}%"></div></div>
+                <div style="font-size:0.71rem;color:#64748b;margin-top:3px;">${sev}% severity</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Rest Days Required</div>
+                <div class="result-value">${a.rest_days || 0} days</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Light Training Return</div>
+                <div class="result-value">After ${a.light_training_return_days || 0} days</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Full Competition Return</div>
+                <div class="result-value">After ${a.full_competition_return_days || 0} days</div>
+            </div>
+        </div>
+
+        <div class="result-full">
+            <div class="result-label">Nutritional Advice</div>
+            <div style="font-size:0.84rem;color:#334155;margin-top:4px;">${a.nutrition_advice || '–'}</div>
+        </div>
+
+        <div class="result-full">
+            <div class="result-label">Rehabilitation Exercises</div>
+            <ul class="result-list" style="margin-top:6px;">${exercises}</ul>
+        </div>
+
+        ${warnings ? `<div class="result-full" style="border:1px solid #fca5a5;background:#fef2f2;">
+            <div class="result-label" style="color:#dc2626;">⚠️ Medical Warnings</div>
+            <ul class="result-list" style="margin-top:6px;color:#dc2626;">${warnings}</ul>
+        </div>` : ''}
+
+        <div class="result-full">
+            <div class="result-label">Academic Impact</div>
+            <div style="margin-top:4px;">${acaHtml}</div>
+        </div>
+
+        <div class="result-full" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+            <div class="result-label" style="color:#059669;">Recommendation Summary</div>
+            <div style="font-size:0.84rem;color:#065f46;margin-top:4px;">${a.recommendation_summary || '–'}</div>
+        </div>
+    </div>`;
+}
+// Cultural student: Simple return confirmation (no injury options)
+function confirmReturnCultural(participationId) {
+    if (!confirm('Confirm your return from this competition?')) return;
+    
+    fetch('/api/confirm-return-cultural/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': CSRF,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            participation_id: participationId
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast('✅ ' + data.message, true);
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast('❌ ' + data.error, false);
+        }
+    })
+    .catch(() => showToast('❌ Connection error', false));
+}
+</script>
+</body>
+</html>

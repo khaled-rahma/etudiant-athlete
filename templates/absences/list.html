@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Justified Absences{% endblock %}
+
+{% block content %}
+<style>
+    .container{padding:20px;max-width:1200px;margin:0 auto;direction:ltr}
+    .top-bar{margin-bottom:20px}
+    .back-btn{background:#475569;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;font-weight:600;transition:opacity 0.2s}
+    .back-btn:hover{opacity:0.85}
+    h1{color:#0d1f35;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+    .stats-row{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+    .stat-card{background:white;border-radius:12px;padding:16px 22px;text-align:center;flex:1;min-width:140px;box-shadow:0 2px 10px rgba(0,0,0,0.07)}
+    .stat-card.blue{border-bottom:4px solid #0d5c9e}.stat-card.green{border-bottom:4px solid #10b981}
+    .stat-card.yellow{border-bottom:4px solid #f59e0b}.stat-card.red{border-bottom:4px solid #ef4444}
+    .stat-number{font-size:2rem;font-weight:900;color:#0d1f35}
+    .stat-label{color:#64748b;font-size:0.82rem}
+    table{width:100%;background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.07);border-collapse:collapse;font-size:0.86rem}
+    th,td{padding:12px 14px;text-align:left;border-bottom:1px solid #f1f5f9}
+    th{background:linear-gradient(90deg,#f0f5fb,#e8f0fb);font-weight:700;color:#0d1f35}
+    tr:hover td{background:#f4f9ff}
+    .badge{padding:3px 10px;border-radius:20px;font-size:0.76rem;font-weight:700}
+    .badge-healthy{background:#dcfce7;color:#065f46}
+    .badge-injured{background:#fee2e2;color:#dc2626}
+    .badge-travel{background:#dbeafe;color:#1d4ed8}
+    .badge-local{background:#f1f5f9;color:#475569}
+    .badge-confirmed{background:#dcfce7;color:#065f46}
+    .badge-pending{background:#fef3c7;color:#92400e}
+    .btn-report{
+        display:inline-flex;align-items:center;gap:5px;
+        background:linear-gradient(135deg,#7c3aed,#a855f7);
+        color:white;border:none;padding:6px 13px;border-radius:7px;
+        cursor:pointer;font-size:0.78rem;font-weight:700;
+        font-family:'Segoe UI',sans-serif;transition:all 0.2s;
+    }
+    .btn-report:hover{opacity:0.9;transform:translateY(-1px)}
+    .btn-report:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+    .no-report{color:#94a3b8;font-size:0.78rem}
+
+    /* ─── Modal ─── */
+    .overlay{display:none;position:fixed;inset:0;background:rgba(8,17,31,0.78);z-index:2000;align-items:center;justify-content:center}
+    .modal-box{background:white;border-radius:18px;padding:26px;width:780px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(8,17,31,0.4);animation:pop 0.28s ease}
+    @keyframes pop{from{opacity:0;transform:scale(0.92) translateY(18px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .modal-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:13px;border-bottom:2px solid #dce8f5;margin-bottom:18px}
+    .modal-head span{font-size:1rem;font-weight:800;color:#0d1f35}
+    .xbtn{width:32px;height:32px;background:#f1f5f9;border:none;border-radius:50%;cursor:pointer;font-size:0.88rem;color:#64748b;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+    .xbtn:hover{background:#ef4444;color:white}
+
+    /* ─── Report Card ─── */
+    .report-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;background:#f4f9ff;border-radius:10px;padding:14px}
+    .meta-item .meta-label{font-size:0.71rem;color:#64748b;font-weight:600}
+    .meta-item .meta-value{font-size:0.88rem;font-weight:700;color:#0d1f35}
+    .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+    .result-item{background:#faf5ff;border-radius:8px;padding:10px 12px}
+    .result-label{font-size:0.7rem;color:#64748b;font-weight:600;margin-bottom:3px}
+    .result-value{font-size:0.88rem;color:#0d1f35;font-weight:700}
+    .severity-bar{height:7px;background:#e2e8f0;border-radius:20px;overflow:hidden;margin-top:6px}
+    .severity-fill{height:100%;border-radius:20px}
+    .result-full{background:#faf5ff;border-radius:8px;padding:10px 12px;margin-bottom:10px}
+    .result-list{list-style:none;padding:0}
+    .result-list li{font-size:0.82rem;color:#475569;padding:3px 0;display:flex;align-items:flex-start;gap:6px}
+    .result-list li::before{content:"•";color:#7c3aed;font-weight:900;flex-shrink:0}
+    .img-gallery{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .img-gallery a img{width:100px;height:100px;object-fit:cover;border-radius:8px;border:2px solid #d8b4fe;transition:transform 0.2s}
+    .img-gallery a img:hover{transform:scale(1.05)}
+</style>
+
+<div class="container">
+    <div class="top-bar">
+        <a href="{% url 'dashboard' %}" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <h1><i class="fas fa-calendar-times"></i> Justified Absences</h1>
+
+    <div class="stats-row">
+        <div class="stat-card blue"><div class="stat-number">{{ stats.total }}</div><div class="stat-label">Total Absences</div></div>
+        <div class="stat-card green"><div class="stat-number">{{ stats.returned }}</div><div class="stat-label">Returned</div></div>
+        <div class="stat-card yellow"><div class="stat-number">{{ stats.not_returned }}</div><div class="stat-label">Not Yet Returned</div></div>
+        <div class="stat-card red"><div class="stat-number">{{ stats.injured }}</div><div class="stat-label">Injured</div></div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Student</th>
+                <th>Reg. Number</th>
+                <th>Specialty</th>
+                <th>Activity</th>
+                <th>Competition</th>
+                <th>Period</th>
+                <th>Travel</th>
+                <th>Health</th>
+                <th>Return</th>
+                <th>AI Report</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for absence in absences %}
+            <tr>
+                <td style="color:#94a3b8;">{{ forloop.counter }}</td>
+                <td style="font-weight:700;color:#0d1f35;">{{ absence.student.name }}</td>
+                <td style="color:#64748b;">{{ absence.student.matricule }}</td>
+                <td style="color:#64748b;font-size:0.8rem;">{{ absence.student.specialty }}</td>
+                <td>
+                    {% if absence.student.category == 'A' %}🏃{% else %}🎭{% endif %}
+                    {{ absence.student.activity }}
+                </td>
+                <td style="font-size:0.82rem;">{{ absence.competition.title }}</td>
+                <td style="white-space:nowrap;font-size:0.82rem;">{{ absence.start_date }} → {{ absence.end_date }}</td>
+                <td>
+                    {% if absence.competition.is_travel %}
+                    <span class="badge badge-travel">✈️ Travel</span>
+                    {% else %}
+                    <span class="badge badge-local">🏠 Local</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if absence.injury_status == 'healthy' %}
+                    <span class="badge badge-healthy">✅ Healthy</span>
+                    {% elif absence.injury_status == 'injured' %}
+                    <span class="badge badge-injured">🤕 Injured</span>
+                    {% else %}
+                    <span class="badge" style="background:#f1f5f9;color:#475569;">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if absence.return_confirmed %}
+                    <span class="badge badge-confirmed">✅ Confirmed</span>
+                    {% else %}
+                    <span class="badge badge-pending">⏳ Pending</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if absence.ai_analysis %}
+                    <button class="btn-report" onclick="viewReport({{ absence.id }})">
+                        <i class="fas fa-robot"></i> View Report
+                    </button>
+                    {% else %}
+                    <span class="no-report">—</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="11" style="text-align:center;color:#94a3b8;padding:40px;">No absences recorded yet</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal: AI Report -->
+<div id="reportModal" class="overlay" onclick="closeModal(event)">
+    <div class="modal-box">
+        <div class="modal-head">
+            <span id="reportModalTitle">AI Medical Report</span>
+            <button onclick="closeModal()" class="xbtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="reportModalBody">
+            <div style="text-align:center;padding:30px;color:#94a3b8;">Loading...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewReport(absenceId) {
+    document.getElementById('reportModal').style.display = 'flex';
+    document.getElementById('reportModalBody').innerHTML =
+        '<div style="text-align:center;padding:30px;color:#6d28d9;"><i class="fas fa-circle-notch fa-spin" style="font-size:2rem;"></i><div style="margin-top:10px;">Loading AI Report...</div></div>';
+
+    fetch(`/api/get-injury-analysis-by-absence/${absenceId}/`)
+        .then(r => r.json())
+        .then(d => {
+            if (!d.success) {
+                document.getElementById('reportModalBody').innerHTML =
+                    '<div style="text-align:center;padding:30px;color:#dc2626;">Report not available.</div>';
+                return;
+            }
+            document.getElementById('reportModalTitle').textContent =
+                '🤖 AI Medical Report – ' + d.student_name;
+            document.getElementById('reportModalBody').innerHTML = buildReportModal(d);
+        })
+        .catch(() => {
+            document.getElementById('reportModalBody').innerHTML =
+                '<div style="text-align:center;color:#dc2626;padding:20px;">Connection error.</div>';
+        });
+}
+
+function closeModal(e) {
+    const m = document.getElementById('reportModal');
+    if (!e || e.target === m) m.style.display = 'none';
+}
+
+function buildReportModal(d) {
+    const a   = d.analysis;
+    const sev = a.severity_percentage || 0;
+    const lvl = (a.severity_level || 'mild').toLowerCase();
+    const color = lvl === 'severe' ? '#ef4444' : lvl === 'moderate' ? '#f59e0b' : '#10b981';
+    const fills = lvl === 'severe' ? '#ef4444' : lvl === 'moderate' ? '#f59e0b' : '#10b981';
+
+    const exercises = (a.rehab_exercises || []).map(e => `<li>${e}</li>`).join('');
+    const warnings  = (a.emergency_warnings || []).map(w => `<li>${w}</li>`).join('');
+    const academic  = a.academic_impact || {};
+    const acaHtml   = academic.affects_study
+        ? `<span style="color:#dc2626;font-weight:700;">⚠️ YES – ${academic.days_affected || 0} days affected</span>
+           <div style="font-size:0.78rem;color:#64748b;margin-top:3px;">${academic.notes || ''}</div>`
+        : `<span style="color:#059669;font-weight:700;">✅ No academic impact</span>`;
+
+    let imagesHtml = '';
+    if (d.images && d.images.length > 0) {
+        imagesHtml = `<div class="result-full">
+            <div class="result-label">📷 Uploaded Medical Images</div>
+            <div class="img-gallery">
+                ${d.images.map(url => `<a href="${url}" target="_blank"><img src="${url}" alt="Medical image"></a>`).join('')}
+            </div>
+        </div>`;
+    }
+
+    const descHtml = d.description
+        ? `<div class="result-full" style="border:1px solid #dce8f5;">
+            <div class="result-label">Student's Description</div>
+            <div style="font-size:0.84rem;color:#334155;margin-top:4px;">"${d.description}"</div>
+           </div>` : '';
+
+    return `
+        <div class="report-meta">
+            <div class="meta-item"><div class="meta-label">Student</div><div class="meta-value">${d.student_name}</div></div>
+            <div class="meta-item"><div class="meta-label">Activity</div><div class="meta-value">${d.activity}</div></div>
+            <div class="meta-item"><div class="meta-label">Analyzed at</div><div class="meta-value">${d.analyzed_at ? d.analyzed_at.substring(0,16) : '–'}</div></div>
+        </div>
+        ${descHtml}
+        ${imagesHtml}
+        <div class="result-grid">
+            <div class="result-item">
+                <div class="result-label">Injury Type</div>
+                <div class="result-value">${a.injury_type || '–'}</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Affected Body Part</div>
+                <div class="result-value">${a.affected_body_part || '–'}</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Severity Level</div>
+                <div class="result-value" style="color:${color};text-transform:capitalize;">${a.severity_level || '–'}</div>
+                <div class="severity-bar"><div class="severity-fill" style="width:${sev}%;background:${fills};"></div></div>
+                <div style="font-size:0.71rem;color:#64748b;margin-top:3px;">${sev}%</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Rest Days</div>
+                <div class="result-value">${a.rest_days || 0} days</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Light Training Return</div>
+                <div class="result-value">After ${a.light_training_return_days || 0} days</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Full Competition Return</div>
+                <div class="result-value">After ${a.full_competition_return_days || 0} days</div>
+            </div>
+        </div>
+        <div class="result-full">
+            <div class="result-label">Nutritional Advice</div>
+            <div style="font-size:0.84rem;color:#334155;margin-top:4px;">${a.nutrition_advice || '–'}</div>
+        </div>
+        <div class="result-full">
+            <div class="result-label">Rehabilitation Exercises</div>
+            <ul class="result-list" style="margin-top:6px;">${exercises}</ul>
+        </div>
+        ${warnings ? `<div class="result-full" style="border:1px solid #fca5a5;background:#fef2f2;">
+            <div class="result-label" style="color:#dc2626;">⚠️ Medical Warnings</div>
+            <ul class="result-list" style="margin-top:6px;">${warnings}</ul>
+        </div>` : ''}
+        <div class="result-full">
+            <div class="result-label">Academic Impact</div>
+            <div style="margin-top:4px;">${acaHtml}</div>
+        </div>
+        <div class="result-full" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+            <div class="result-label" style="color:#059669;">Recommendation Summary</div>
+            <div style="font-size:0.84rem;color:#065f46;margin-top:4px;">${a.recommendation_summary || '–'}</div>
+        </div>`;
+}
+</script>
+{% endblock %}

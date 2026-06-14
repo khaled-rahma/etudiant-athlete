@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard | Computer Science Department</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
+</head>
+<body>
+
+<span id="user-role" style="display:none">{{ user_role }}</span>
+<span id="can-edit"  style="display:none">{{ can_edit|yesno:"true,false" }}</span>
+
+<header class="header">
+    <div class="header-right">
+        <img src="{% static 'images/hhhhhheeee.jpg' %}" class="hlogo">
+        <div class="htext">
+            <span class="hu">Kasdi Merbah University – Ouargla</span>
+            <span class="hf">Faculty of New Information and Communication Technologies</span>
+            <span class="hd">Computer Science Department</span>
+        </div>
+    </div>
+    <div class="header-mid">
+        <div class="typing-box">
+            <span id="typed2"></span><span class="cur2">|</span>
+        </div>
+    </div>
+    <div class="header-left">
+        <div class="badge">
+            <span class="b1">Sports & Cultural Student System</span>
+            <span class="b2">
+                {% if user_role == 'chef_service' %}🏆 Service Manager
+                {% elif user_role == 'chef_departement' %}📚 Department Head
+                {% elif user_role == 'vp' %}👑 University Vice President
+                {% endif %}
+            </span>
+        </div>
+        <a href="{% url 'logout' %}" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sdept"><i class="fas fa-laptop-code"></i> Computer Science Department</div>
+        <ul>
+            <li class="active" onclick="goSection('sec-home',this)">
+                <i class="fas fa-chart-pie"></i> Dashboard
+            </li>
+            <li onclick="window.location.href='{% url 'all_competitions_results' %}'">
+                <i class="fas fa-chart-bar"></i> All Competition Results
+            </li>
+            {% if user_role == 'chef_service' %}
+            <li onclick="window.location.href='{% url 'incoming_competitions' %}'">
+                <i class="fas fa-inbox"></i> Incoming Competitions
+            </li>
+            <li onclick="goSection('sec-pending',this)">
+                <i class="fas fa-user-clock"></i> Pending Requests
+                <span id="badgePending" class="sbadge">0</span>
+            </li>
+            {% endif %}
+            <li onclick="goSection('sec-sports',this)">
+                <i class="fas fa-running"></i> Athletes Record
+            </li>
+            <li onclick="goSection('sec-culture',this)">
+                <i class="fas fa-masks-theater"></i> Cultural Record
+            </li>
+            <li onclick="goSection('sec-schedules',this)">
+                <i class="fas fa-calendar-alt"></i> Schedules
+            </li>
+            {% if user_role == 'chef_service' or user_role == 'chef_departement' or user_role == 'vp' %}
+            <li onclick="window.location.href='{% url 'absences' %}'">
+                <i class="fas fa-calendar-times"></i> Justified Absences
+            </li>
+            {% endif %}
+        </ul>
+    </aside>
+
+    <main class="main">
+        <div class="frame">
+            <!-- الرئيسية -->
+            <div id="sec-home" class="sec">
+                <div class="sec-title">
+                    <i class="fas fa-chart-pie"></i> Statistics Dashboard – Computer Science Department
+                </div>
+                <div class="stats-grid">
+                    <div class="scard blue">
+                        <div class="sicon"><i class="fas fa-user-check"></i></div>
+                        <div class="sinfo"><p>Approved</p><strong id="stTotal">0</strong></div>
+                    </div>
+                    <div class="scard orange">
+                        <div class="sicon"><i class="fas fa-hourglass-half"></i></div>
+                        <div class="sinfo"><p>Under Review</p><strong id="stPending">0</strong></div>
+                    </div>
+                    <div class="scard green">
+                        <div class="sicon"><i class="fas fa-running"></i></div>
+                        <div class="sinfo"><p>Athletes</p><strong id="stSports">0</strong></div>
+                    </div>
+                    <div class="scard purple">
+                        <div class="sicon"><i class="fas fa-palette"></i></div>
+                        <div class="sinfo"><p>Cultural</p><strong id="stCulture">0</strong></div>
+                    </div>
+                </div>
+
+                <div class="filter-bar">
+                    <span class="filter-label"><i class="fas fa-filter"></i> Filter:</span>
+                    <div id="filterBtns">
+                        <button class="fbtn active" onclick="doFilter('all',this)">All</button>
+                    </div>
+                </div>
+
+                <div class="sub-title">
+                    <i class="fas fa-users"></i>
+                    <span id="filterTitle">All Approved Students</span>
+                </div>
+                <div class="tbl-wrap">
+                    <table class="tbl">
+                        <thead>
+                            <tr><th>#</th><th>Name</th><th>Major</th><th>Activity</th><th>Type</th></tr>
+                        </thead>
+                        <tbody id="homeTbody"></tbody>
+                    </table>
+                </div>
+                <div id="homeEmpty" class="empty-msg" style="display:none">
+                    <i class="fas fa-inbox"></i> No students found
+                </div>
+            </div>
+
+            <!-- طلبات جديدة -->
+            {% if user_role == 'chef_service' %}
+            <div id="sec-pending" class="sec" style="display:none">
+                <div class="sec-title">
+                    <i class="fas fa-user-clock"></i> Review Join Requests
+                </div>
+                <div class="tbl-wrap">
+                    <table class="tbl">
+                        <thead>
+                            <tr><th>#</th><th>Name</th><th>Major</th><th>Activity</th><th>Status</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="pendingTbody"></tbody>
+                    </table>
+                </div>
+                <div id="pendingEmpty" class="empty-msg" style="display:none">
+                    <i class="fas fa-check-circle"></i> No pending requests
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- الرياضيون -->
+            <div id="sec-sports" class="sec" style="display:none">
+                <div class="sec-title"><i class="fas fa-running"></i> Approved Athletes List</div>
+                <div class="tbl-wrap">
+                    <table class="tbl">
+                        <thead><tr><th>#</th><th>Name</th><th>Major</th><th>Sport</th></tr></thead>
+                        <tbody id="sportsTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- الثقافيون -->
+            <div id="sec-culture" class="sec" style="display:none">
+                <div class="sec-title"><i class="fas fa-masks-theater"></i> Cultural Students List</div>
+                <div class="tbl-wrap">
+                    <table class="tbl">
+                        <thead><tr><th>#</th><th>Name</th><th>Major</th><th>Cultural Activity</th></tr></thead>
+                        <tbody id="cultureTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- الجداول -->
+            <div id="sec-schedules" class="sec" style="display:none">
+                <div class="sec-title"><i class="fas fa-calendar-alt"></i> Student Schedules</div>
+                <div class="tbl-wrap">
+                    <table class="tbl">
+                        <thead><tr><th>#</th><th>Student</th><th>Major</th><th>Activity</th><th>Schedule</th></tr></thead>
+                        <tbody id="schedTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal: Schedule -->
+<div id="schedModal" class="overlay" onclick="closeSchedModal(event)">
+    <div class="modal-box">
+        <div class="modal-head">
+            <span id="schedModalTitle">Schedule</span>
+            <button onclick="closeSchedModal()" class="xbtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="schedModalBody"></div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- Modal: Student Card - بطاقة الطالب -->
+<!-- ============================================================ -->
+<div id="cardModal" class="overlay" onclick="closeCardModal(event)">
+    <div class="modal-box card-box">
+        <div class="id-card" id="printableCard">
+
+            <!-- رأس البطاقة -->
+            <div class="card-header">
+                <div class="card-header-text">
+                    <p class="card-republic">الجمهورية الجزائرية الديمقراطية الشعبية</p>
+                    <p class="card-ministry">وزارة التعليم العالي والبحث العلمي</p>
+                    <p class="card-univ-name">جامعة ورقلة</p>
+                </div>
+                <div class="card-logo-wrap">
+                    <img src="{% static 'images/hhhhhheeee.jpg' %}" alt="شعار الجامعة" class="card-logo-img">
+                </div>
+            </div>
+
+            <!-- عنوان البطاقة -->
+            <div class="card-title-bar">
+                <h2 id="cardMainTitle">بطاقة الطالب</h2>
+            </div>
+
+            <!-- جسم البطاقة -->
+            <div class="card-content">
+                <div class="card-photo-section">
+                    <div class="card-photo-frame">
+                        <img id="cardPhoto" src="" alt="صورة الطالب">
+                    </div>
+                    <div class="card-activity-badge" id="cardActivityBadge">رياضي</div>
+                </div>
+
+                <div class="card-info-section">
+                    <table class="card-info-table" dir="rtl">
+                        <tbody>
+                            <tr>
+                                <td class="info-label">اللقب</td>
+                                <td class="info-sep">»</td>
+                                <td class="info-value" id="cardLastNameAr">-</td>
+                                <td class="info-label-fr">اللقب ف</td>
+                                <td class="info-sep">»</td>
+                                <td class="info-value" id="cardLastNameFr">-</td>
+                            </tr>
+                            <tr>
+                                <td class="info-label">الاسم</td>
+                                <td class="info-sep">»</td>
+                                <td class="info-value" id="cardFirstNameAr">-</td>
+                                <td class="info-label-fr">الاسم ف</td>
+                                <td class="info-sep">»</td>
+                                <td class="info-value" id="cardFirstNameFr">-</td>
+                            </tr>
+                            <tr>
+                                <td class="info-label">تاريخ الميلاد</td>
+                                <td class="info-sep">»</td>
+                                <td class="info-value" id="cardBirthDate">-</td>
+                                <td class="info-label-fr">مكان الميلاد</td>
+                                <td class="info-sep">»</td>
+                                <td class="info-value" id="cardBirthPlace">-</td>
+                            </tr>
+                            <tr>
+                                <td class="info-label">الفئة</td>
+                                <td class="info-sep">»</td>
+                                <td class="info-value category-value" id="cardCategory">-</td>
+                                <td colspan="3"></td>
+                            </tr>
+                            <tr>
+                                <td class="info-label" id="cardActivityLabel">نوع الرياضة</td>
+                                <td class="info-sep">»</td>
+                                <td class="info-value sport-value" colspan="3" id="cardActivityType">-</td>
+                            </tr>
+                            <tr>
+                                <td class="info-label">الرقم الجامعي</td>
+                                <td class="info-sep">»</td>
+                                <td class="info-value" colspan="3" id="cardRegNum">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- الشريط السفلي -->
+            <div class="card-bottom-bar">
+                <div class="card-bottom-left">
+                    <span class="bottom-label">رقم التسجيل</span>
+                    <span class="bottom-value" id="cardRegNum2">-</span>
+                </div>
+                <div class="card-bottom-right">
+                    <span class="bottom-label">السنة الجامعية</span>
+                    <span class="acad-year">2025 / 2026</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-btns">
+            <button onclick="window.print()" class="pbtn">
+                <i class="fas fa-print"></i> طباعة
+            </button>
+            <button onclick="closeCardModal()" class="cbtn2">
+                <i class="fas fa-times"></i> إغلاق
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Card Styles */
+.overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+.overlay.active { display: flex; }
+
+.card-box {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    max-width: 680px;
+    width: 95%;
+}
+
+.id-card {
+    background: #fff;
+    border: 2px solid #c8e6c9;
+    border-radius: 12px;
+    overflow: hidden;
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+    direction: rtl;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px 10px;
+    background: #fff;
+    border-bottom: 1px solid #e8f5e9;
+}
+.card-header-text {
+    flex: 1;
+    text-align: right;
+}
+.card-republic {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 2px;
+}
+.card-ministry {
+    font-size: 11.5px;
+    color: #333;
+    margin: 0 0 2px;
+}
+.card-univ-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a6e2e;
+    margin: 0;
+}
+.card-logo-wrap {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    margin-right: 12px;
+}
+.card-logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.card-title-bar {
+    background: #fff;
+    text-align: center;
+    padding: 6px 12px 10px;
+    border-bottom: 2px dashed #a5d6a7;
+}
+.card-title-bar h2 {
+    font-size: 26px;
+    font-weight: 900;
+    color: #111;
+    margin: 0;
+    letter-spacing: 1px;
+}
+
+.card-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    padding: 16px 18px;
+    background: linear-gradient(135deg, #f9fffe 60%, #e8f8f0 100%);
+    position: relative;
+}
+
+.card-photo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 110px;
+}
+.card-photo-frame {
+    width: 100px;
+    height: 120px;
+    border: 2px solid #388e3c;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #e8f5e9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.card-photo-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.card-activity-badge {
+    background: #2e7d32;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+}
+
+.card-info-section {
+    flex: 1;
+    padding-right: 16px;
+}
+.card-info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.card-info-table tr {
+    border-bottom: 1px dashed #c8e6c9;
+}
+.card-info-table tr:last-child {
+    border-bottom: none;
+}
+.info-label {
+    color: #555;
+    font-size: 12px;
+    padding: 6px 4px;
+    white-space: nowrap;
+    text-align: right;
+}
+.info-label-fr {
+    color: #555;
+    font-size: 12px;
+    padding: 6px 4px 6px 12px;
+    white-space: nowrap;
+    text-align: right;
+    border-right: 1px solid #c8e6c9;
+}
+.info-sep {
+    color: #1b5e20;
+    font-weight: 700;
+    padding: 0 4px;
+    font-size: 13px;
+}
+.info-value {
+    font-weight: 700;
+    font-size: 14px;
+    color: #111;
+    padding: 6px 4px;
+}
+.category-value {
+    color: #1565c0;
+}
+.sport-value {
+    color: #b71c1c;
+    font-size: 15px;
+}
+
+.card-bottom-bar {
+    background: #2e7d32;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 18px;
+    position: relative;
+}
+.card-bottom-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-direction: row-reverse;
+}
+.card-bottom-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+}
+.bottom-label {
+    font-size: 12px;
+    opacity: 0.85;
+}
+.bottom-value {
+    font-size: 16px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.15);
+    padding: 2px 12px;
+    border-radius: 4px;
+    min-width: 60px;
+    text-align: center;
+}
+.acad-year {
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+.card-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 16px;
+}
+.pbtn {
+    background: #1565c0;
+    color: #fff;
+    border: none;
+    padding: 10px 28px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.pbtn:hover { background: #0d47a1; }
+.cbtn2 {
+    background: #e53935;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.cbtn2:hover { background: #b71c1c; }
+
+@media print {
+    body * { visibility: hidden; }
+    #printableCard, #printableCard * { visibility: visible; }
+    #printableCard {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    .overlay { display: block !important; position: static; background: none; }
+    .card-box { box-shadow: none; }
+    .card-btns { display: none; }
+}
+</style>
+
+<script>
+    var CSRF_TOKEN = '{{ csrf_token }}';
+    var USER_ROLE = '{{ user_role }}';
+    var CAN_EDIT = {% if can_edit %}true{% else %}false{% endif %};
+    
+    (function() {
+        var el2 = document.getElementById('typed2');
+        if (!el2) return;
+        var txt2 = 'Sports & Cultural Student Management System – Computer Science Department – Ouargla University';
+        var ti2 = 0, td2 = false;
+        function runTyped2() {
+            el2.textContent = txt2.substring(0, ti2);
+            if (!td2 && ti2 < txt2.length)  { ti2++; setTimeout(runTyped2, 68); }
+            else if (td2 && ti2 > 0)         { ti2--; setTimeout(runTyped2, 32); }
+            else { td2 = !td2; setTimeout(runTyped2, td2 ? 3000 : 600); }
+        }
+        runTyped2();
+    })();
+
+    // ========== Student Card Functions ==========
+    
+    /**
+     * فتح بطاقة الطالب
+     * @param {Object} student - بيانات الطالب من النظام
+     */
+function openCardModal(student) {
+    // ✅ تحديد نوع الطالب بناءً على حقل category الذي يأتي من الـ API
+    var isSport = (student.category === 'A');
+
+    // العنوان الرئيسي للبطاقة
+    document.getElementById('cardMainTitle').textContent =
+        isSport ? 'بطاقة الطالب الرياضي' : 'بطاقة الطالب الثقافي';
+
+    // الشارة اللونية
+    var badge = document.getElementById('cardActivityBadge');
+    badge.textContent       = isSport ? 'رياضي' : 'ثقافي';
+    badge.style.background  = isSport ? '#2e7d32' : '#6a1b9a';
+
+    // تسمية النشاط
+    document.getElementById('cardActivityLabel').textContent =
+        isSport ? 'نوع الرياضة' : 'النشاط الثقافي';
+
+    // ✅ تعبئة البيانات من الحقول الصحيحة القادمة من API
+    document.getElementById('cardLastNameAr').textContent  = student.last_name_ar  || '—';
+    document.getElementById('cardFirstNameAr').textContent = student.first_name_ar || '—';
+    document.getElementById('cardLastNameFr').textContent  = student.last_name_fr  || '—';
+    document.getElementById('cardFirstNameFr').textContent = student.first_name_fr || '—';
+    document.getElementById('cardBirthDate').textContent   = student.birth_date    || '—';
+    document.getElementById('cardBirthPlace').textContent  = student.birth_place   || '—';  // ← التعديل هنا
+    document.getElementById('cardCategory').textContent    = isSport ? 'رياضي' : 'ثقافي';
+    document.getElementById('cardActivityType').textContent = student.activity     || '—';
+
+    var regNum = student.matricule || student.id || '—';
+    document.getElementById('cardRegNum').textContent  = regNum;
+    document.getElementById('cardRegNum2').textContent = regNum;
+
+    // السنة الدراسية في الشريط السفلي
+    var yearEl = document.querySelector('.acad-year');
+    if (yearEl) yearEl.textContent = student.academic_year || '2025 / 2026';
+
+    // الصورة
+    var photoEl = document.getElementById('cardPhoto');
+    var photoSrc = student.photo || '';
+    if (photoSrc) {
+        photoEl.src           = photoSrc;
+        photoEl.style.display = 'block';
+    } else {
+        photoEl.src           = '';
+        photoEl.style.display = 'none';
+    }
+
+    // إظهار البطاقة
+    document.getElementById('cardModal').style.display = 'flex';
+}
+
+// مرادف للتوافق مع أي مكان يستدعي showStudentCard
+function showStudentCard(student) { openCardModal(student); }
+
+    /**
+     * إغلاق البطاقة
+     */
+    function closeCardModal(event) {
+        if (!event || event.target === document.getElementById('cardModal') || event.target.classList.contains('cbtn2')) {
+            document.getElementById('cardModal').style.display = 'none';
+        }
+    }
+    
+    function closeSchedModal(event) {
+        if (!event || event.target === document.getElementById('schedModal')) {
+            document.getElementById('schedModal').style.display = 'none';
+        }
+    }
+    
+    // تعريف دالة showStudentCard كمرادف لـ openCardModal للتأكد من التوافق
+    function showStudentCard(student) {
+        openCardModal(student);
+    }
+</script>
+
+<script src="{% static 'js/dashboard.js' %}"></script>
+</body>
+</html>

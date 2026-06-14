@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Registration | Computer Science Department</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/form.css' %}">
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
+</head>
+<body>
+
+<div class="bg-slider">
+    <img src="{% static 'images/image_0.jpg' %}" class="active">
+    <img src="{% static 'images/image_1.jpg' %}">
+    <img src="{% static 'images/image_2.jpg' %}">
+    <img src="{% static 'images/image_3.jpg' %}">
+    <img src="{% static 'images/image_4.jpg' %}">
+    <img src="{% static 'images/image_5.jpg' %}">
+    <img src="{% static 'images/image_6.jpg' %}">
+    <img src="{% static 'images/image_7.jpg' %}">
+</div>
+<div class="bg-overlay"></div>
+
+<div class="form-wrapper">
+    <div class="form-header">
+        <div class="header-row">
+            <img src="{% static 'images/hhhhhheeee.jpg' %}" class="logo">
+            <div class="header-text">
+                <p class="t1">Kasdi Merbah University – Ouargla</p>
+                <p class="t2">Faculty of New Information and Communication Technologies</p>
+                <p class="t3">Computer Science Department</p>
+            </div>
+        </div>
+        <h2>Sports & Cultural Activities Registration Platform</h2>
+        <p class="typing-line"><span id="typed"></span><span class="cur">|</span></p>
+    </div>
+
+    <div class="form-body">
+        <form id="myForm" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="field">
+                <label>Profile Picture *</label>
+                <div class="upload-box" id="photoBox" onclick="document.getElementById('photoInput').click()">
+                    <img id="photoPreview" src="" style="display:none; width:80px; height:96px; object-fit:cover; border-radius:6px; border:2px solid #0d5c9e;">
+                    <div id="photoText">
+                        <div style="font-size:2rem;">📷</div>
+                        <span>Click to upload photo</span>
+                        <small>Will be compressed automatically</small>
+                    </div>
+                </div>
+                <input type="file" id="photoInput" name="photo" accept="image/*" style="display:none">
+            </div>
+
+            <!-- 4 خانات للاسم -->
+            <div class="grid2">
+                <div class="field">
+                    <label>الاسم (عربي) *</label>
+                    <input type="text" id="firstNameAr" name="first_name_ar" placeholder="الاسم الأول بالعربية" required>
+                </div>
+                <div class="field">
+                    <label>اللقب (عربي) *</label>
+                    <input type="text" id="lastNameAr" name="last_name_ar" placeholder="اللقب بالعربية" required>
+                </div>
+                <div class="field">
+                    <label>Nom (Français) *</label>
+                    <input type="text" id="firstNameFr" name="first_name_fr" placeholder="Prénom en français" required>
+                </div>
+                <div class="field">
+                    <label>Prénom (Français) *</label>
+                    <input type="text" id="lastNameFr" name="last_name_fr" placeholder="Nom en français" required>
+                </div>
+            </div>
+
+            <!-- السنة الدراسية -->
+            <div class="field">
+                <label>Academic Year *</label>
+                <select id="academicYear" name="academic_year" required>
+                    <option value="">-- Select Academic Year --</option>
+                    <option value="2023/2024">2023/2024</option>
+                    <option value="2024/2025">2024/2025</option>
+                    <option value="2025/2026">2025/2026</option>
+                    <option value="2026/2027">2026/2027</option>
+                </select>
+            </div>
+
+            <!-- تاريخ ومكان الميلاد -->
+            <div class="grid2">
+                <div class="field">
+                    <label>Date of Birth *</label>
+                    <input type="date" id="birthDate" name="birth_date" required>
+                </div>
+                <div class="field">
+                    <label>Place of Birth *</label>
+                    <input type="text" id="birthPlace" name="birth_place" placeholder="مثال: ورقلة" required>
+                </div>
+            </div>
+
+            <div class="grid2">
+                <div class="field">
+                    <label>Blood Type *</label>
+                    <select id="blood" name="blood" required>
+                        <option value="">-- Select --</option>
+                        <option>A+</option><option>A-</option>
+                        <option>B+</option><option>B-</option>
+                        <option>O+</option><option>O-</option>
+                        <option>AB+</option><option>AB-</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Registration Number (12 digits) *</label>
+                    <input type="text" id="matricule" name="matricule" maxlength="12" placeholder="202XXXXXXXXX" required>
+                </div>
+                <div class="field">
+                    <label>Email</label>
+                    <input type="email" id="email" name="email" placeholder="example@univ.dz">
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Academic Major *</label>
+                <select id="specialty" name="specialty" required>
+                    <option value="">-- Select your program --</option>
+                    <optgroup label="State Engineer (5 years)">
+                        <option value="State Engineer – Year 1 – Common Core">Year 1 – Common Core - Computer Engineering</option>
+                        <option value="State Engineer – Year 2 – Common Core">Year 2 – Common Core - Computer Engineering</option>
+                        <option value="State Engineer – Year 3 – Artificial Intelligence">Year 3 – Artificial Intelligence</option>
+                        <option value="State Engineer – Year 3 – Cybersecurity">Year 3 – Cybersecurity</option>
+                        <option value="State Engineer – Year 4 – Artificial Intelligence">Year 4 – Artificial Intelligence</option>
+                        <option value="State Engineer – Year 4 – Cybersecurity">Year 4 – Cybersecurity</option>
+                        <option value="State Engineer – Year 5 – Artificial Intelligence">Year 5 – Artificial Intelligence</option>
+                        <option value="State Engineer – Year 5 – Cybersecurity">Year 5 – Cybersecurity</option>
+                    </optgroup>
+                    <optgroup label="Bachelor's Degree (3 years)">
+                        <option value="Bachelor – Year 1 – Computer Science">Year 1 – Computer Science</option>
+                        <option value="Bachelor – Year 2 – Computer Science">Year 2 – Computer Science (Common Core)</option>
+                        <option value="Bachelor – Year 3 – Information Systems">Year 3 – Information Systems</option>
+                        <option value="Bachelor – Year 3 – Software Engineering">Year 3 – Software Engineering</option>
+                        <option value="Bachelor – Year 3 – General Computer Science">Year 3 – General Computer Science</option>
+                    </optgroup>
+                    <optgroup label="Master's Degree (2 years)">
+                        <option value="Master – Year 1 – Artificial Intelligence">Year 1 Master – Artificial Intelligence</option>
+                        <option value="Master – Year 1 – Networks and Distributed Systems">Year 1 Master – Networks and Distributed Systems</option>
+                        <option value="Master – Year 1 – Software Engineering">Year 1 Master – Software Engineering</option>
+                        <option value="Master – Year 1 – Systems Security">Year 1 Master – Systems Security</option>
+                        <option value="Master – Year 1 – Data Science">Year 1 Master – Data Science</option>
+                        <option value="Master – Year 2 – Artificial Intelligence">Year 2 Master – Artificial Intelligence</option>
+                        <option value="Master – Year 2 – Networks and Distributed Systems">Year 2 Master – Networks and Distributed Systems</option>
+                        <option value="Master – Year 2 – Software Engineering">Year 2 Master – Software Engineering</option>
+                        <option value="Master – Year 2 – Systems Security">Year 2 Master – Systems Security</option>
+                        <option value="Master – Year 2 – Data Science">Year 2 Master – Data Science</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Activity Type *</label>
+                <div class="radio-row">
+                    <label class="rcard" id="rcA">
+                        <input type="radio" name="cat" value="A" id="catA">
+                        <span>🏃 Sports</span>
+                    </label>
+                    <label class="rcard" id="rcB">
+                        <input type="radio" name="cat" value="B" id="catB">
+                        <span>🎭 Cultural</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="field" id="sportField" style="display:none">
+                <label>Select Sport *</label>
+                <select id="sportSelect" name="activity_sport">
+                    <option value="">-- Select --</option>
+                    <option>Football</option><option>Karate</option>
+                    <option>Swimming</option><option>Athletics</option>
+                    <option>Handball</option><option>Volleyball</option>
+                    <option>Basketball</option><option>Table Tennis</option>
+                    <option>Judo</option><option>Taekwondo</option>
+                </select>
+            </div>
+
+            <div class="field" id="cultureField" style="display:none">
+                <label>Select Cultural Activity *</label>
+                <select id="cultureSelect" name="activity_culture">
+                    <option value="">-- Select --</option>
+                    <option>Theatre</option>
+                    <option>IT & Programming Club</option>
+                    <option>Robotics Club</option>
+                    <option>Cybersecurity Club</option>
+                    <option>Music</option><option>Drawing & Arts</option>
+                    <option>Reading & Literature Club</option>
+                    <option>Student Journalism</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Academic Schedule (Image or PDF) *</label>
+                <div class="upload-box flat" id="schedBox" onclick="document.getElementById('schedInput').click()">
+                    <div id="schedText">
+                        <div style="font-size:1.8rem;">📅</div>
+                        <span>Click to upload schedule</span>
+                        <small>Image or PDF</small>
+                    </div>
+                </div>
+                <input type="file" id="schedInput" name="schedule" accept="image/*,.pdf" style="display:none">
+                <p id="schedInfo" style="font-size:0.75rem;color:#10b981;margin-top:4px;"></p>
+            </div>
+
+            <div id="progressArea" style="display:none; margin-bottom:14px;">
+                <p style="font-size:0.8rem;color:#0d5c9e;font-weight:700;margin-bottom:6px;text-align:center;">Sending data...</p>
+                <div style="height:8px;background:#dce8f5;border-radius:20px;overflow:hidden;">
+                    <div id="progressBar" style="height:100%;background:linear-gradient(90deg,#0d5c9e,#0ea5e9);width:0%;transition:width 0.4s;border-radius:20px;"></div>
+                </div>
+            </div>
+
+            <div id="errorMsg" style="display:none;background:#fef2f2;border:1px solid #fca5a5;color:#dc2626;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:0.85rem;font-weight:600;"></div>
+
+            <button type="submit" id="submitBtn">✅ Confirm & Submit Request</button>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'js/form.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Send Invitations - Service Manager{% endblock %}
+
+{% block content %}
+<style>
+    .container { padding: 20px; max-width: 800px; margin: 0 auto; }
+    .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h1 { color: #0d1f35; margin-bottom: 20px; }
+    .warning { background: #fef3c7; padding: 15px; border-radius: 8px; color: #92400e; margin-bottom: 20px; }
+    .count { font-size: 1.2rem; color: #0d5c9e; font-weight: bold; margin: 15px 0; }
+    .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 1rem; }
+    .btn-primary { background: #0d5c9e; color: white; }
+    .btn-secondary { background: #e2e8f0; color: #475569; margin-right: 10px; text-decoration: none; display: inline-block; }
+</style>
+
+<div class="container">
+    <div class="card">
+        <h1><i class="fas fa-paper-plane"></i> Send Invitations to Students</h1>
+        
+        <p><strong>Competition:</strong> {{ competition.title }}</p>
+        
+        {% if students_count == 0 %}
+        <div class="warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            No approved students in this activity! Please approve students first.
+        </div>
+        {% else %}
+        <p class="count">📊 Target Students: {{ students_count }} students</p>
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            <a href="{% url 'incoming_competitions' %}" class="btn btn-secondary">↩️ Back</a>
+            {% if students_count > 0 %}
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-bell"></i> Send Invitations to Students
+            </button>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock %}

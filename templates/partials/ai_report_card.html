@@ -1,0 +1,78 @@
+{% load static %}
+<div class="ai-result">
+    <div class="ai-result-title">
+        <i class="fas fa-robot"></i> AI Medical File Analysis Report
+    </div>
+
+    <div class="result-grid">
+        <div class="result-item">
+            <div class="result-label">Injury / Condition Type</div>
+            <div class="result-value">{{ analysis.injury_type|default:"–" }}</div>
+        </div>
+        <div class="result-item">
+            <div class="result-label">Affected Body Part</div>
+            <div class="result-value">{{ analysis.affected_body_part|default:"–" }}</div>
+        </div>
+        <div class="result-item">
+            <div class="result-label">Severity Level</div>
+            <div class="result-value">{{ analysis.severity_level|default:"–" }}</div>
+            <div class="severity-bar">
+                <div class="severity-fill severity-{{ analysis.severity_level|default:'mild' }}" 
+                     style="width:{{ analysis.severity_percentage|default:0 }}%"></div>
+            </div>
+        </div>
+        <div class="result-item">
+            <div class="result-label">Rest Days Required</div>
+            <div class="result-value">{{ analysis.rest_days|default:0 }} days</div>
+        </div>
+        <div class="result-item">
+            <div class="result-label">Light Training Return</div>
+            <div class="result-value">After {{ analysis.light_training_return_days|default:0 }} days</div>
+        </div>
+        <div class="result-item">
+            <div class="result-label">Full Competition Return</div>
+            <div class="result-value">After {{ analysis.full_competition_return_days|default:0 }} days</div>
+        </div>
+    </div>
+
+    <div class="result-full">
+        <div class="result-label">🥗 Nutritional Advice</div>
+        <div>{{ analysis.nutrition_advice|default:"–" }}</div>
+    </div>
+
+    <div class="result-full">
+        <div class="result-label">💪 Rehabilitation Exercises</div>
+        <ul>
+            {% for ex in analysis.rehab_exercises %}
+            <li>{{ ex }}</li>
+            {% empty %}
+            <li>No specific exercises</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    {% if analysis.emergency_warnings %}
+    <div class="result-full" style="background:#fee2e2;">
+        <div class="result-label" style="color:#dc2626;">⚠️ Medical Warnings</div>
+        <ul>
+            {% for w in analysis.emergency_warnings %}
+            <li style="color:#dc2626;">{{ w }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <div class="result-full">
+        <div class="result-label">📚 Academic Impact</div>
+        {% if analysis.academic_impact.affects_study %}
+        <span style="color:#dc2626;">⚠️ Yes - {{ analysis.academic_impact.days_affected }} days</span>
+        {% else %}
+        <span style="color:#10b981;">✅ No academic impact</span>
+        {% endif %}
+    </div>
+
+    <div class="result-full" style="background:#f0fdf4;">
+        <div class="result-label" style="color:#059669;">💡 Recommendation Summary</div>
+        <div>{{ analysis.recommendation_summary|default:"–" }}</div>
+    </div>
+</div>

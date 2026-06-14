@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Competition - Official Entity</title>
+    {% load static %}
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 550px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .header { text-align: center; margin-bottom: 25px; }
+        .logo {
+            width: 65px; height: 65px;
+            background: linear-gradient(135deg, #0d5c9e, #0a4a82);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 12px;
+        }
+        .logo i { font-size: 1.8rem; color: white; }
+        h1 { color: #0d1f35; font-size: 1.2rem; margin-bottom: 5px; }
+        .subtitle { color: #64748b; font-size: 0.8rem; }
+        .form-group { margin-bottom: 18px; }
+        label {
+            display: block; margin-bottom: 6px;
+            font-weight: 600; color: #0d1f35; font-size: 0.85rem;
+        }
+        input, select {
+            width: 100%; padding: 10px 12px;
+            border: 2px solid #e2e8f0; border-radius: 10px;
+            font-size: 0.9rem; transition: all 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #0d5c9e; outline: none;
+            box-shadow: 0 0 0 3px rgba(13,92,158,0.1);
+        }
+        .checkbox { display: flex; align-items: center; gap: 10px; }
+        .checkbox input { width: 18px; height: 18px; }
+        .btn {
+            width: 100%; padding: 12px;
+            background: linear-gradient(135deg, #0d5c9e, #0a4a82);
+            color: white; border: none; border-radius: 10px;
+            font-size: 1rem; font-weight: bold;
+            cursor: pointer; transition: all 0.3s; margin-top: 10px;
+        }
+        .btn:hover {
+            opacity: 0.9; transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13,92,158,0.3);
+        }
+        .success-msg {
+            background: #d1fae5; color: #065f46;
+            padding: 12px; border-radius: 10px;
+            margin-bottom: 20px; text-align: center; font-size: 0.85rem;
+        }
+        hr { margin: 15px 0; border: none; border-top: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo"><i class="fas fa-trophy"></i></div>
+            <h1>Add New Competition</h1>
+            <div class="subtitle">Ministry of Higher Education &amp; Scientific Research</div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="success-msg">✅ {{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" id="competitionForm">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>📌 Activity Type *</label>
+                <select name="activity_type" id="activityType" required>
+                    <option value="">-- Select --</option>
+                    <option value="sport">🏃 Sports Activity</option>
+                    <option value="culture">🎭 Cultural Activity</option>
+                </select>
+            </div>
+
+            <!-- hidden input يحمل القيمة الصحيحة -->
+            <input type="hidden" name="activity_name" id="activityNameHidden">
+
+            <div class="form-group" id="sportGroup" style="display:none;">
+                <label>⚽ Select Sport *</label>
+                <select id="sportSelect">
+                    <option value="">-- Choose a sport --</option>
+                    <option value="football">⚽ Football</option>
+                    <option value="karate">🥋 Karate</option>
+                    <option value="swimming">🏊 Swimming</option>
+                    <option value="athletics">🏃 Athletics</option>
+                    <option value="handball">🤾 Handball</option>
+                    <option value="volleyball">🏐 Volleyball</option>
+                    <option value="basketball">🏀 Basketball</option>
+                    <option value="table tennis">🏓 Table Tennis</option>
+                    <option value="judo">🥋 Judo</option>
+                    <option value="taekwondo">🥋 Taekwondo</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="cultureGroup" style="display:none;">
+                <label>🎨 Select Cultural Activity *</label>
+                <select id="cultureSelect">
+                    <option value="">-- Choose an activity --</option>
+                    <option value="theatre">🎭 Theatre</option>
+                    <option value="it club">💻 IT &amp; Programming Club</option>
+                    <option value="robotics">🤖 Robotics Club</option>
+                    <option value="cybersecurity">🔒 Cybersecurity Club</option>
+                    <option value="music">🎵 Music</option>
+                    <option value="drawing">🎨 Drawing &amp; Arts</option>
+                    <option value="reading">📚 Reading &amp; Literature Club</option>
+                    <option value="journalism">📰 Student Journalism</option>
+                </select>
+            </div>
+
+            <hr>
+
+            <div class="form-group">
+                <label>🏆 Competition Title *</label>
+                <input type="text" name="title" placeholder="Example: National Football Championship" required>
+            </div>
+            <div class="form-group">
+                <label>📍 Location *</label>
+                <input type="text" name="location" placeholder="Example: Algiers, Sétif, Oran..." required>
+            </div>
+            <div class="form-group">
+                <label>📅 Start Date *</label>
+                <input type="date" name="start_date" required>
+            </div>
+            <div class="form-group">
+                <label>📅 End Date *</label>
+                <input type="date" name="end_date" required>
+            </div>
+            <div class="form-group checkbox">
+                <input type="checkbox" name="is_travel" id="is_travel">
+                <label for="is_travel">✈️ Out-of-province competition (requires travel)</label>
+            </div>
+
+            <button type="submit" class="btn">
+                <i class="fas fa-paper-plane"></i> Send Competition
+            </button>
+        </form>
+    </div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script>
+        const activityType  = document.getElementById('activityType');
+        const sportGroup    = document.getElementById('sportGroup');
+        const cultureGroup  = document.getElementById('cultureGroup');
+        const sportSelect   = document.getElementById('sportSelect');
+        const cultureSelect = document.getElementById('cultureSelect');
+        const hidden        = document.getElementById('activityNameHidden');
+
+        // sync hidden field whenever a select changes
+        sportSelect.addEventListener('change',   () => hidden.value = sportSelect.value);
+        cultureSelect.addEventListener('change', () => hidden.value = cultureSelect.value);
+
+        activityType.addEventListener('change', function () {
+            if (this.value === 'sport') {
+                sportGroup.style.display   = 'block';
+                cultureGroup.style.display = 'none';
+                cultureSelect.value = '';
+                hidden.value = sportSelect.value;
+            } else if (this.value === 'culture') {
+                sportGroup.style.display   = 'none';
+                cultureGroup.style.display = 'block';
+                sportSelect.value = '';
+                hidden.value = cultureSelect.value;
+            } else {
+                sportGroup.style.display   = 'none';
+                cultureGroup.style.display = 'none';
+                hidden.value = '';
+            }
+        });
+
+        document.getElementById('competitionForm').addEventListener('submit', function (e) {
+            const type = activityType.value;
+            if (!type) {
+                e.preventDefault(); alert('❌ Please select activity type'); return;
+            }
+            if (type === 'sport' && !sportSelect.value) {
+                e.preventDefault(); alert('❌ Please select a sport'); return;
+            }
+            if (type === 'culture' && !cultureSelect.value) {
+                e.preventDefault(); alert('❌ Please select a cultural activity'); return;
+            }
+        });
+    </script>
+</body>
+</html>
